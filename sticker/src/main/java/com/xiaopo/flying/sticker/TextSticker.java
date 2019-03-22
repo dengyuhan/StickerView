@@ -75,8 +75,8 @@ public class TextSticker extends Sticker {
       this.drawable = ContextCompat.getDrawable(context, R.drawable.sticker_transparent_background);
     }
     textPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
-    realBounds = new Rect(0, 0, getWidth(), getHeight());
-    textRect = new Rect(0, 0, getWidth(), getHeight());
+    realBounds = new Rect(0, 0, getOriginalWidth(), getOriginalHeight());
+    textRect = new Rect(0, 0, getOriginalWidth(), getOriginalHeight());
     minTextSizePixels = convertSpToPx(6);
     maxTextSizePixels = convertSpToPx(32);
     alignment = Layout.Alignment.ALIGN_CENTER;
@@ -95,8 +95,8 @@ public class TextSticker extends Sticker {
 
     canvas.save();
     canvas.concat(matrix);
-    if (textRect.width() == getWidth()) {
-      int dy = getHeight() / 2 - staticLayout.getHeight() / 2;
+    if (textRect.width() == getOriginalWidth()) {
+      int dy = getOriginalHeight() / 2 - staticLayout.getHeight() / 2;
       // center vertical
       canvas.translate(0, dy);
     } else {
@@ -108,11 +108,11 @@ public class TextSticker extends Sticker {
     canvas.restore();
   }
 
-  @Override public int getWidth() {
+  @Override public int getOriginalWidth() {
     return drawable.getIntrinsicWidth();
   }
 
-  @Override public int getHeight() {
+  @Override public int getOriginalHeight() {
     return drawable.getIntrinsicHeight();
   }
 
@@ -134,16 +134,16 @@ public class TextSticker extends Sticker {
 
   @Override public TextSticker setDrawable(@NonNull Drawable drawable) {
     this.drawable = drawable;
-    realBounds.set(0, 0, getWidth(), getHeight());
-    textRect.set(0, 0, getWidth(), getHeight());
+    realBounds.set(0, 0, getOriginalWidth(), getOriginalHeight());
+    textRect.set(0, 0, getOriginalWidth(), getOriginalHeight());
     return this;
   }
 
   @NonNull public TextSticker setDrawable(@NonNull Drawable drawable, @Nullable Rect region) {
     this.drawable = drawable;
-    realBounds.set(0, 0, getWidth(), getHeight());
+    realBounds.set(0, 0, getOriginalWidth(), getOriginalHeight());
     if (region == null) {
-      textRect.set(0, 0, getWidth(), getHeight());
+      textRect.set(0, 0, getOriginalWidth(), getOriginalHeight());
     } else {
       textRect.set(region.left, region.top, region.right, region.bottom);
     }

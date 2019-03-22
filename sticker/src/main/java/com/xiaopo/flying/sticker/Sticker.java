@@ -5,27 +5,14 @@ import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 /**
  * @author wupanjie
  */
 public abstract class Sticker {
-
-  @IntDef(flag = true, value = {
-      Position.CENTER, Position.TOP, Position.BOTTOM, Position.LEFT, Position.RIGHT
-  }) @Retention(RetentionPolicy.SOURCE) public @interface Position {
-    int CENTER = 1;
-    int TOP = 1 << 1;
-    int LEFT = 1 << 2;
-    int RIGHT = 1 << 3;
-    int BOTTOM = 1 << 4;
-  }
 
   private final float[] matrixValues = new float[9];
   private final float[] unrotatedWrapperCorner = new float[8];
@@ -64,11 +51,18 @@ public abstract class Sticker {
     return this;
   }
 
+  /**
+   * 初始化后 添加之前
+   */
+  public void onPostInitialize(){
+
+  }
+
   public abstract void draw(@NonNull Canvas canvas);
 
-  public abstract int getWidth();
+  public abstract int getOriginalWidth();
 
-  public abstract int getHeight();
+  public abstract int getOriginalHeight();
 
   public abstract Sticker setDrawable(@NonNull Drawable drawable);
 
@@ -87,38 +81,38 @@ public abstract class Sticker {
       if (!isFlippedVertically) {
         points[0] = 0f;
         points[1] = 0f;
-        points[2] = getWidth();
+        points[2] = getOriginalWidth();
         points[3] = 0f;
         points[4] = 0f;
-        points[5] = getHeight();
-        points[6] = getWidth();
-        points[7] = getHeight();
+        points[5] = getOriginalHeight();
+        points[6] = getOriginalWidth();
+        points[7] = getOriginalHeight();
       } else {
         points[0] = 0f;
-        points[1] = getHeight();
-        points[2] = getWidth();
-        points[3] = getHeight();
+        points[1] = getOriginalHeight();
+        points[2] = getOriginalWidth();
+        points[3] = getOriginalHeight();
         points[4] = 0f;
         points[5] = 0f;
-        points[6] = getWidth();
+        points[6] = getOriginalWidth();
         points[7] = 0f;
       }
     } else {
       if (!isFlippedVertically) {
-        points[0] = getWidth();
+        points[0] = getOriginalWidth();
         points[1] = 0f;
         points[2] = 0f;
         points[3] = 0f;
-        points[4] = getWidth();
-        points[5] = getHeight();
+        points[4] = getOriginalWidth();
+        points[5] = getOriginalHeight();
         points[6] = 0f;
-        points[7] = getHeight();
+        points[7] = getOriginalHeight();
       } else {
-        points[0] = getWidth();
-        points[1] = getHeight();
+        points[0] = getOriginalWidth();
+        points[1] = getOriginalHeight();
         points[2] = 0f;
-        points[3] = getHeight();
-        points[4] = getWidth();
+        points[3] = getOriginalHeight();
+        points[4] = getOriginalWidth();
         points[5] = 0f;
         points[6] = 0f;
         points[7] = 0f;
@@ -149,7 +143,7 @@ public abstract class Sticker {
   }
 
   public void getBound(@NonNull RectF dst) {
-    dst.set(0, 0, getWidth(), getHeight());
+    dst.set(0, 0, getOriginalWidth(), getOriginalHeight());
   }
 
   @NonNull public RectF getMappedBound() {
@@ -169,7 +163,7 @@ public abstract class Sticker {
   }
 
   public void getCenterPoint(@NonNull PointF dst) {
-    dst.set(getWidth() * 1f / 2, getHeight() * 1f / 2);
+    dst.set(getOriginalWidth() * 1f / 2, getOriginalHeight() * 1f / 2);
   }
 
   @NonNull public PointF getMappedCenterPoint() {
@@ -192,11 +186,11 @@ public abstract class Sticker {
   }
 
   public float getCurrentHeight() {
-    return getMatrixScale(matrix) * getHeight();
+    return getMatrixScale(matrix) * getOriginalHeight();
   }
 
   public float getCurrentWidth() {
-    return getMatrixScale(matrix) * getWidth();
+    return getMatrixScale(matrix) * getOriginalWidth();
   }
 
   /**

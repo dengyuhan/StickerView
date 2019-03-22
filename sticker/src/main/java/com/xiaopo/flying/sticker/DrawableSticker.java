@@ -16,7 +16,7 @@ public class DrawableSticker extends Sticker {
 
   public DrawableSticker(Drawable drawable) {
     this.drawable = drawable;
-    realBounds = new Rect(0, 0, getWidth(), getHeight());
+    realBounds = new Rect(0, 0, getOriginalWidth(), getOriginalHeight());
   }
 
   @NonNull @Override public Drawable getDrawable() {
@@ -41,11 +41,11 @@ public class DrawableSticker extends Sticker {
     return this;
   }
 
-  @Override public int getWidth() {
+  @Override public int getOriginalWidth() {
     return drawable.getIntrinsicWidth();
   }
 
-  @Override public int getHeight() {
+  @Override public int getOriginalHeight() {
     return drawable.getIntrinsicHeight();
   }
 
