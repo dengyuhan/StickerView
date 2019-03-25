@@ -45,7 +45,7 @@ install {
     pom {
       project {
         packaging 'aar'
-        name '基于wuapnjie/StickerView的扩展' // #修改# // 标题
+        name 'StickerView' // #修改# // 标题
         url siteUrl
         // Set your license
         licenses {

@@ -225,6 +225,19 @@ public class StickerView extends FrameLayout {
     protected void dispatchDraw(Canvas canvas) {
         super.dispatchDraw(canvas);
         drawStickers(canvas);
+
+        //drawHandlingStickerBorder(canvas);
+    }
+
+    protected void drawHandlingStickerBorder(Canvas canvas) {
+        if (handlingSticker != null) {
+            final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paint.setColor(Color.RED);
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(5f);
+            final RectF mappedBound = handlingSticker.getMappedBound();
+            canvas.drawRect(mappedBound, paint);
+        }
     }
 
     protected void drawStickers(Canvas canvas) {
