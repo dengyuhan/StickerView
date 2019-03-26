@@ -5,6 +5,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.view.View;
+import android.view.ViewGroup;
 
 /**
  * @author dengyuhan
@@ -21,7 +22,16 @@ public class ViewSticker extends Sticker {
 
     @Override
     public void onPostInitialize() {
-        this.mOriginalRect = new Rect(0, 0, mView.getWidth(), mView.getHeight());
+        final ViewGroup.LayoutParams params = mView.getLayoutParams();
+        int width = mView.getWidth();
+        int height = mView.getHeight();
+        if (width <= 0 && params.width > 0) {
+            width = params.width;
+        }
+        if (height <= 0 && params.height > 0) {
+            height = params.height;
+        }
+        this.mOriginalRect = new Rect(0, 0, width, height);
     }
 
     @NonNull
