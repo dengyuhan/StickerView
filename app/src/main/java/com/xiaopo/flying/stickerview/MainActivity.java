@@ -85,6 +85,13 @@ public class MainActivity extends AppCompatActivity {
         sticker.setTextAlign(Layout.Alignment.ALIGN_CENTER);
         sticker.resizeText();
 
+        stickerView.setOnStickerPointChangedListener(new StickerView.OnStickerPointChangedListener() {
+            @Override
+            public void onStickerPointChanged(@NonNull Sticker sticker) {
+                //final RectF bound = sticker.getMappedBound();
+                //Log.d(TAG, bound.toString());
+            }
+        });
         stickerView.setOnStickerOperationListener(new StickerView.OnStickerOperationListener() {
             @Override
             public void onStickerAdded(@NonNull Sticker sticker) {
@@ -100,6 +107,12 @@ public class MainActivity extends AppCompatActivity {
                     stickerView.invalidate();
                 }
                 Log.d(TAG, "onStickerClicked");
+            }
+
+            @Override
+            public void onStickerLongClicked(@NonNull Sticker sticker) {
+                Log.d(TAG, "onStickerLongClicked");
+                //stickerView.removeCurrentSticker();
             }
 
             @Override
@@ -184,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
 
         ImageView test = new ImageView(this);
         final StickerView.LayoutParams layoutParams = new StickerView.LayoutParams(300, 300);
-        layoutParams.gravity = Gravity.LEFT ;
+        layoutParams.gravity = Gravity.LEFT;
         test.setLayoutParams(layoutParams);
         test.setImageResource(R.drawable.haizewang_215);
         stickerView.addView(test);

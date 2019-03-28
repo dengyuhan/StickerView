@@ -11,6 +11,8 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Message;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
@@ -58,6 +60,7 @@ public class StickerView extends FrameLayout {
         int ZOOM_WITH_TWO_FINGER = 2;
         int ICON = 3;
         int CLICK = 4;
+        int LONG_CLICK = 5;
     }
 
     @IntDef(flag = true, value = {FLIP_HORIZONTALLY, FLIP_VERTICALLY})
@@ -109,9 +112,15 @@ public class StickerView extends FrameLayout {
     private boolean constrained;
 
     private OnStickerOperationListener onStickerOperationListener;
+    private OnStickerPointChangedListener onStickerPointChangedListener;
 
     private long lastClickTime = 0;
     private int minClickDelayTime = DEFAULT_MIN_CLICK_DELAY_TIME;
+
+    private Handler mHandler;
+    private int mCurrentAction;
+    private float mCurrentX;
+    private float mCurrentY;
 
     public StickerView(Context context) {
         this(context, null);
@@ -322,14 +331,17 @@ public class StickerView extends FrameLayout {
         return super.onInterceptTouchEvent(ev);
     }
 
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (locked) {
             return super.onTouchEvent(event);
         }
 
+        mCurrentAction = event.getAction();
+        mCurrentX = event.getX();
+        mCurrentY = event.getY();
         int action = MotionEventCompat.getActionMasked(event);
-
         switch (action) {
             case MotionEvent.ACTION_DOWN:
                 if (!onTouchDown(event)) {
@@ -406,6 +418,8 @@ public class StickerView extends FrameLayout {
             }
         }
 
+        handleLongPress(event);
+
         if (currentIcon == null && handlingSticker == null) {
             return false;
         }
@@ -453,8 +467,14 @@ public class StickerView extends FrameLayout {
             case ActionMode.DRAG:
                 if (handlingSticker != null) {
                     moveMatrix.set(downMatrix);
-                    moveMatrix.postTranslate(event.getX() - downX, event.getY() - downY);
+                    float dx = event.getX() - downX;
+                    float dy = event.getY() - downY;
+                    moveMatrix.postTranslate(dx, dy);
                     handlingSticker.setMatrix(moveMatrix);
+
+                    if (onStickerPointChangedListener != null && dx != 0 && dy != 0) {
+                        onStickerPointChangedListener.onStickerPointChanged(handlingSticker);
+                    }
                     if (constrained) {
                         constrainSticker(handlingSticker);
                     }
@@ -480,6 +500,32 @@ public class StickerView extends FrameLayout {
                 }
                 break;
         }
+    }
+
+    public void handleLongPress(MotionEvent event) {
+        if (mHandler == null) {
+            mHandler = new Handler() {
+                @Override
+                public void handleMessage(Message msg) {
+                    switch (msg.what) {
+                        case ActionMode.LONG_CLICK:
+                            //在容错范围内才算长按
+                            if (handlingSticker != null && (MotionEvent.ACTION_DOWN == mCurrentAction ||
+                                    (currentMode == ActionMode.DRAG
+                                            && Math.abs(mCurrentX - downX) < touchSlop
+                                            && Math.abs(mCurrentY - downY) < touchSlop))) {
+                                currentMode = ActionMode.LONG_CLICK;
+                                if (onStickerOperationListener != null) {
+                                    onStickerOperationListener.onStickerLongClicked(handlingSticker);
+                                }
+                            }
+                            break;
+                    }
+                }
+            };
+        }
+
+        mHandler.sendEmptyMessageAtTime(ActionMode.LONG_CLICK, event.getDownTime() + ViewConfiguration.getLongPressTimeout());
     }
 
     public void zoomAndRotateCurrentSticker(@NonNull MotionEvent event) {
@@ -729,6 +775,9 @@ public class StickerView extends FrameLayout {
     public boolean remove(@Nullable Sticker sticker) {
         if (stickers.contains(sticker)) {
             stickers.remove(sticker);
+            if (sticker instanceof ViewSticker) {
+                super.removeView(((ViewSticker) sticker).getView());
+            }
             if (onStickerOperationListener != null) {
                 onStickerOperationListener.onStickerDeleted(sticker);
             }
@@ -742,6 +791,23 @@ public class StickerView extends FrameLayout {
             Log.d(TAG, "remove: the sticker is not in this StickerView");
 
             return false;
+        }
+    }
+
+    @Override
+    public void removeView(View view) {
+        boolean isRemove = false;
+        for (Sticker sticker : stickers) {
+            if (sticker instanceof ViewSticker) {
+                if (view == ((ViewSticker) sticker).getView()) {
+                    isRemove = true;
+                    remove(sticker);
+                    break;
+                }
+            }
+        }
+        if (!isRemove) {
+            super.removeView(view);
         }
     }
 
@@ -921,6 +987,12 @@ public class StickerView extends FrameLayout {
         return this;
     }
 
+    @NonNull
+    public StickerView setOnStickerPointChangedListener(@Nullable OnStickerPointChangedListener listener) {
+        this.onStickerPointChangedListener = listener;
+        return this;
+    }
+
     @Nullable
     public OnStickerOperationListener getOnStickerOperationListener() {
         return onStickerOperationListener;
@@ -947,6 +1019,8 @@ public class StickerView extends FrameLayout {
 
         void onStickerClicked(@NonNull Sticker sticker);
 
+        void onStickerLongClicked(@NonNull Sticker sticker);
+
         void onStickerDeleted(@NonNull Sticker sticker);
 
         void onStickerDragFinished(@NonNull Sticker sticker);
@@ -958,6 +1032,11 @@ public class StickerView extends FrameLayout {
         void onStickerFlipped(@NonNull Sticker sticker);
 
         void onStickerDoubleTapped(@NonNull Sticker sticker);
+    }
+
+    public interface OnStickerPointChangedListener {
+
+        void onStickerPointChanged(@NonNull Sticker sticker);
     }
 
     public static class LayoutParams extends FrameLayout.LayoutParams {
