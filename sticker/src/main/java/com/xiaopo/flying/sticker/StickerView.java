@@ -473,7 +473,7 @@ public class StickerView extends FrameLayout {
                     handlingSticker.setMatrix(moveMatrix);
 
                     if (onStickerPointChangedListener != null && dx != 0 && dy != 0) {
-                        onStickerPointChangedListener.onStickerPointChanged(handlingSticker);
+                        onStickerPointChangedListener.onStickerPointChanged(handlingSticker, event);
                     }
                     if (constrained) {
                         constrainSticker(handlingSticker);
@@ -1036,7 +1036,7 @@ public class StickerView extends FrameLayout {
 
     public interface OnStickerPointChangedListener {
 
-        void onStickerPointChanged(@NonNull Sticker sticker);
+        void onStickerPointChanged(@NonNull Sticker sticker, @NonNull MotionEvent event);
     }
 
     public static class LayoutParams extends FrameLayout.LayoutParams {

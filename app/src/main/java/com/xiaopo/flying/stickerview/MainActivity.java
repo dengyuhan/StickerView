@@ -14,6 +14,7 @@ import android.text.Layout;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -87,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
 
         stickerView.setOnStickerPointChangedListener(new StickerView.OnStickerPointChangedListener() {
             @Override
-            public void onStickerPointChanged(@NonNull Sticker sticker) {
+            public void onStickerPointChanged(@NonNull Sticker sticker, @NonNull MotionEvent event) {
                 //final RectF bound = sticker.getMappedBound();
                 //Log.d(TAG, bound.toString());
             }
