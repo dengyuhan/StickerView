@@ -773,7 +773,7 @@ public class StickerView extends FrameLayout {
     }
 
 
-    protected boolean remove(@Nullable Sticker sticker) {
+    public boolean remove(@Nullable Sticker sticker) {
         if (stickers.contains(sticker)) {
             stickers.remove(sticker);
             if (sticker instanceof ViewSticker) {
