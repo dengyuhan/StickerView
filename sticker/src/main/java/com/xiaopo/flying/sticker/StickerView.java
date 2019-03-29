@@ -434,6 +434,10 @@ public class StickerView extends FrameLayout {
             currentIcon.onActionUp(this, event);
         }
 
+        if (handlingSticker != null && onStickerOperationListener != null) {
+            onStickerOperationListener.onStickerTouchedUp(handlingSticker);
+        }
+
         if (currentMode == ActionMode.DRAG
                 && Math.abs(event.getX() - downX) < touchSlop
                 && Math.abs(event.getY() - downY) < touchSlop
@@ -449,10 +453,8 @@ public class StickerView extends FrameLayout {
             }
         }
 
-        if (currentMode == ActionMode.DRAG && handlingSticker != null) {
-            if (onStickerOperationListener != null) {
-                onStickerOperationListener.onStickerDragFinished(handlingSticker);
-            }
+        if (handlingSticker != null && onStickerOperationListener != null && currentMode == ActionMode.DRAG) {
+            onStickerOperationListener.onStickerDragFinished(handlingSticker);
         }
 
         currentMode = ActionMode.NONE;
@@ -802,7 +804,7 @@ public class StickerView extends FrameLayout {
 
     public void removeAllStickers() {
         for (Sticker sticker : stickers) {
-            if (sticker instanceof ViewSticker){
+            if (sticker instanceof ViewSticker) {
                 super.removeView(((ViewSticker) sticker).getView());
             }
         }
@@ -1016,6 +1018,8 @@ public class StickerView extends FrameLayout {
         void onStickerDragFinished(@NonNull Sticker sticker);
 
         void onStickerTouchedDown(@NonNull Sticker sticker);
+
+        void onStickerTouchedUp(@NonNull Sticker sticker);
 
         void onStickerZoomFinished(@NonNull Sticker sticker);
 
