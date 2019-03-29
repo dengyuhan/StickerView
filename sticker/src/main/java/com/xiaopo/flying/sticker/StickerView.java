@@ -772,14 +772,11 @@ public class StickerView extends FrameLayout {
         }
     }
 
-    public boolean remove(@Nullable Sticker sticker) {
-        return remove(sticker, true);
-    }
 
-    protected boolean remove(@Nullable Sticker sticker, boolean removeView) {
+    protected boolean remove(@Nullable Sticker sticker) {
         if (stickers.contains(sticker)) {
             stickers.remove(sticker);
-            if (removeView && sticker instanceof ViewSticker) {
+            if (sticker instanceof ViewSticker) {
                 super.removeView(((ViewSticker) sticker).getView());
             }
             if (onStickerOperationListener != null) {
@@ -798,34 +795,17 @@ public class StickerView extends FrameLayout {
         }
     }
 
-    @Override
-    public void removeView(View view) {
-        super.removeView(view);
-        for (Sticker sticker : stickers) {
-            if (sticker instanceof ViewSticker) {
-                if (view == ((ViewSticker) sticker).getView()) {
-                    remove(sticker, false);
-                    break;
-                }
-            }
-        }
-    }
-
-    @Override
-    public void removeAllViewsInLayout() {
-        super.removeAllViewsInLayout();
-        for (Sticker sticker : stickers) {
-            if (sticker instanceof ViewSticker) {
-                remove(sticker, false);
-            }
-        }
-    }
 
     public boolean removeCurrentSticker() {
         return remove(handlingSticker);
     }
 
     public void removeAllStickers() {
+        for (Sticker sticker : stickers) {
+            if (sticker instanceof ViewSticker){
+                super.removeView(((ViewSticker) sticker).getView());
+            }
+        }
         stickers.clear();
         if (handlingSticker != null) {
             handlingSticker.release();

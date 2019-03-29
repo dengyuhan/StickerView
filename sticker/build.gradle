@@ -30,7 +30,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
-version = "1.6.4" // #修改# // 这里是aar的版本号
+version = "1.6.5" // #修改# // 这里是aar的版本号
 
 def siteUrl = 'https://github.com/dengyuhan/StickerView'
 // #修改# // 项目的主页地址，我这里是我的PickerView项目在github的链接地址
