@@ -773,9 +773,13 @@ public class StickerView extends FrameLayout {
     }
 
     public boolean remove(@Nullable Sticker sticker) {
+        return remove(sticker, true);
+    }
+
+    protected boolean remove(@Nullable Sticker sticker, boolean removeView) {
         if (stickers.contains(sticker)) {
             stickers.remove(sticker);
-            if (sticker instanceof ViewSticker) {
+            if (removeView && sticker instanceof ViewSticker) {
                 super.removeView(((ViewSticker) sticker).getView());
             }
             if (onStickerOperationListener != null) {
@@ -796,18 +800,24 @@ public class StickerView extends FrameLayout {
 
     @Override
     public void removeView(View view) {
-        boolean isRemove = false;
+        super.removeView(view);
         for (Sticker sticker : stickers) {
             if (sticker instanceof ViewSticker) {
                 if (view == ((ViewSticker) sticker).getView()) {
-                    isRemove = true;
-                    remove(sticker);
+                    remove(sticker, false);
                     break;
                 }
             }
         }
-        if (!isRemove) {
-            super.removeView(view);
+    }
+
+    @Override
+    public void removeAllViewsInLayout() {
+        super.removeAllViewsInLayout();
+        for (Sticker sticker : stickers) {
+            if (sticker instanceof ViewSticker) {
+                remove(sticker, false);
+            }
         }
     }
 
