@@ -25,7 +25,6 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -200,33 +199,11 @@ public class StickerView extends FrameLayout {
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
-        requestLayoutStickers();
         if (changed) {
             stickerRect.left = left;
             stickerRect.top = top;
             stickerRect.right = right;
             stickerRect.bottom = bottom;
-        }
-    }
-
-    protected void requestLayoutStickers() {
-        for (Sticker sticker : stickers) {
-            if (sticker instanceof ViewSticker) {
-                final float rotation = sticker.getCurrentAngle();
-                final RectF mappedBound = sticker.getMappedBound();
-                final float scaleWidth = sticker.getCurrentWidth();
-                final float scaleHeight = sticker.getCurrentHeight();
-                //(旋转后的宽高-缩放后的宽高)的一半就是偏移量
-                int offsetX = (int) (mappedBound.right - mappedBound.left - scaleWidth) / 2;
-                int offsetY = (int) (mappedBound.bottom - mappedBound.top - scaleHeight) / 2;
-
-                int newLeft = (int) mappedBound.left + offsetX;
-                int newTop = (int) mappedBound.top + offsetY;
-                int newRight = (int) (newLeft + scaleWidth);
-                int newBottom = (int) (newTop + scaleHeight);
-                ((ViewSticker) sticker).getView().setRotation(rotation);
-                ((ViewSticker) sticker).getView().layout(newLeft, newTop, newRight, newBottom);
-            }
         }
     }
 
@@ -252,9 +229,7 @@ public class StickerView extends FrameLayout {
     protected void drawStickers(Canvas canvas) {
         for (int i = 0; i < stickers.size(); i++) {
             Sticker sticker = stickers.get(i);
-            if (!(sticker instanceof ViewSticker)) {
-                sticker.draw(canvas);
-            }
+            sticker.draw(canvas);
         }
 
         if (handlingSticker != null && !locked && (showBorder || showIcons)) {
@@ -362,7 +337,7 @@ public class StickerView extends FrameLayout {
 
             case MotionEvent.ACTION_MOVE:
                 handleCurrentMode(event);
-                requestLayout();
+                invalidate();
                 break;
 
             case MotionEvent.ACTION_UP:
@@ -409,9 +384,6 @@ public class StickerView extends FrameLayout {
             if (bringToFrontCurrentSticker) {
                 stickers.remove(handlingSticker);
                 stickers.add(handlingSticker);
-                if (handlingSticker instanceof ViewSticker) {
-                    ((ViewSticker) handlingSticker).getView().bringToFront();
-                }
             }
             if (onStickerOperationListener != null) {
                 onStickerOperationListener.onStickerTouchedDown(handlingSticker);
@@ -778,9 +750,6 @@ public class StickerView extends FrameLayout {
     public boolean remove(@Nullable Sticker sticker) {
         if (stickers.contains(sticker)) {
             stickers.remove(sticker);
-            if (sticker instanceof ViewSticker) {
-                super.removeView(((ViewSticker) sticker).getView());
-            }
             if (onStickerOperationListener != null) {
                 onStickerOperationListener.onStickerDeleted(sticker);
             }
@@ -803,11 +772,6 @@ public class StickerView extends FrameLayout {
     }
 
     public void removeAllStickers() {
-        for (Sticker sticker : stickers) {
-            if (sticker instanceof ViewSticker) {
-                super.removeView(((ViewSticker) sticker).getView());
-            }
-        }
         stickers.clear();
         if (handlingSticker != null) {
             handlingSticker.release();
@@ -815,23 +779,6 @@ public class StickerView extends FrameLayout {
         }
         invalidate();
     }
-
-    @Override
-    public void addView(final View child, int index, ViewGroup.LayoutParams params) {
-        super.addView(child, index, params);
-        int gravity = Gravity.CENTER;
-        if (params instanceof FrameLayout.LayoutParams) {
-            gravity = ((FrameLayout.LayoutParams) params).gravity;
-        }
-        boolean isSticker = false;
-        if (params instanceof StickerView.LayoutParams) {
-            isSticker = ((LayoutParams) params).isSticker;
-        }
-        if (isSticker) {
-            addSticker(new ViewSticker(child), gravity);
-        }
-    }
-
 
     @Override
     public FrameLayout.LayoutParams generateLayoutParams(AttributeSet attrs) {
@@ -869,7 +816,6 @@ public class StickerView extends FrameLayout {
     }
 
     protected void addStickerImmediately(@NonNull Sticker sticker, int gravity) {
-        sticker.onPostInitialize();
         setStickerPosition(sticker, gravity);
 
        /* if (!(sticker instanceof ViewSticker)) {
@@ -888,7 +834,7 @@ public class StickerView extends FrameLayout {
         if (onStickerOperationListener != null) {
             onStickerOperationListener.onStickerAdded(sticker);
         }
-        requestLayout();
+        invalidate();
     }
 
     protected void setStickerPosition(@NonNull Sticker sticker, int gravity) {

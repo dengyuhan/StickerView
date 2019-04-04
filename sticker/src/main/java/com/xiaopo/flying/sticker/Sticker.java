@@ -51,13 +51,6 @@ public abstract class Sticker {
     return this;
   }
 
-  /**
-   * 初始化后 添加之前
-   */
-  public void onPostInitialize(){
-
-  }
-
   public abstract void draw(@NonNull Canvas canvas);
 
   public abstract int getOriginalWidth();
