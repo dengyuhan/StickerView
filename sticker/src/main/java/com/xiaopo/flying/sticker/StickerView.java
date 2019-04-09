@@ -724,6 +724,10 @@ public class StickerView extends FrameLayout {
 
     public boolean replace(@Nullable Sticker sticker, boolean needStayState) {
         if (handlingSticker != null && sticker != null) {
+            sticker.setContainerBound(getWidth(), getHeight());
+            if (sticker instanceof TextSticker){
+                ((TextSticker) sticker).resizeText();
+            }
             float width = getWidth();
             float height = getHeight();
             if (needStayState) {
@@ -826,6 +830,11 @@ public class StickerView extends FrameLayout {
     }
 
     protected void addStickerImmediately(@NonNull Sticker sticker, int gravity) {
+        sticker.setContainerBound(getWidth(), getHeight());
+        if (sticker instanceof TextSticker){
+            ((TextSticker) sticker).resizeText();
+        }
+
         //初始化的缩放
         if (mInitialScale > 0f) {
             float scaleFactor;
@@ -852,7 +861,7 @@ public class StickerView extends FrameLayout {
     protected void setStickerPosition(@NonNull Sticker sticker, int gravity) {
         final Rect bounds = new Rect(getPaddingLeft(), getPaddingRight(), getWidth() - getPaddingRight(), getHeight() - getPaddingBottom());
         final Rect outRect = new Rect();
-        Gravity.apply(gravity, (int) sticker.getOriginalWidth(), (int) sticker.getOriginalHeight(), bounds, outRect);
+        Gravity.apply(gravity, sticker.getOriginalWidth(), sticker.getOriginalHeight(), bounds, outRect);
         sticker.getMatrix().setTranslate(outRect.left, outRect.top);
     }
 

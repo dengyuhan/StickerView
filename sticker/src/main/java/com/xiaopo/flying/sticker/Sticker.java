@@ -3,6 +3,7 @@ package com.xiaopo.flying.sticker;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.PointF;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.IntRange;
@@ -20,6 +21,7 @@ public abstract class Sticker {
   private final float[] boundPoints = new float[8];
   private final float[] mappedBounds = new float[8];
   private final RectF trappedRect = new RectF();
+  private final Rect containerBounds = new Rect();
   private final Matrix matrix = new Matrix();
   private boolean isFlippedHorizontally;
   private boolean isFlippedVertically;
@@ -227,6 +229,15 @@ public abstract class Sticker {
     tempMatrix.mapPoints(unrotatedPoint, point);
     StickerUtils.trapToRect(trappedRect, unrotatedWrapperCorner);
     return trappedRect.contains(unrotatedPoint[0], unrotatedPoint[1]);
+  }
+
+
+  protected void setContainerBound(int width, int height) {
+      this.containerBounds.set(0,0, width, height);
+  }
+
+  public Rect getContainerBound() {
+      return containerBounds;
   }
 
   public void release() {

@@ -83,7 +83,6 @@ public class MainActivity extends AppCompatActivity {
         sticker.setText("Hello, world!");
         sticker.setTextColor(Color.BLACK);
         sticker.setTextAlign(Layout.Alignment.ALIGN_CENTER);
-        sticker.resizeText();
 
         stickerView.setOnStickerPointChangedListener(new StickerView.OnStickerPointChangedListener() {
             @Override
@@ -193,11 +192,10 @@ public class MainActivity extends AppCompatActivity {
 
         Drawable bubble = ContextCompat.getDrawable(this, R.drawable.bubble);
         stickerView.addSticker(
-                new TextSticker(getApplicationContext())
+                new TextSticker(getApplicationContext(),null)
                         .setDrawable(bubble)
-                        .setText("Sticker\n")
-                        .setMaxTextSize(14)
-                        .resizeText()
+                        .setText("Sticker")
+                        .setMaxTextSize(32f)
                 , Gravity.END);
     }
 
@@ -246,7 +244,6 @@ public class MainActivity extends AppCompatActivity {
         sticker.setText("Hello, world!");
         sticker.setTextColor(Color.BLUE);
         sticker.setTextAlign(Layout.Alignment.ALIGN_CENTER);
-        sticker.resizeText();
 
         stickerView.addSticker(sticker);
     }
