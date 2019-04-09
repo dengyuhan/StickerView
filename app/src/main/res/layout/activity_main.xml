@@ -19,26 +19,14 @@
     <com.xiaopo.flying.sticker.StickerView
         android:id="@+id/sticker_view"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
         android:layout_weight="1"
+        android:layout_height="0dp"
+        app:initialScale="0.1"
+        app:initialScaleBaseline="parent_width"
         app:bringToFrontCurrentSticker="true"
         app:showBorder="true"
         app:showIcons="true">
 
-        <pl.droidsonroids.gif.GifImageView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_gravity="center"
-            android:scaleType="centerCrop"
-            android:src="@drawable/test"
-            app:sticker="true" />
-
-        <ImageView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/haizewang_90"
-            app:sticker="false" />
 
     </com.xiaopo.flying.sticker.StickerView>
 

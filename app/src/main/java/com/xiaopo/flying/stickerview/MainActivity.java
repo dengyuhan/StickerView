@@ -16,7 +16,6 @@ import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.xiaopo.flying.sticker.BitmapStickerIcon;
@@ -190,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
     private void loadSticker() {
         Drawable drawable =
                 ContextCompat.getDrawable(this, R.drawable.haizewang_215);
-        stickerView.addSticker(new DrawableSticker(drawable), Gravity.BOTTOM | Gravity.LEFT);
+        stickerView.addSticker(new DrawableSticker(drawable), Gravity.RIGHT|Gravity.BOTTOM);
 
         Drawable bubble = ContextCompat.getDrawable(this, R.drawable.bubble);
         stickerView.addSticker(
@@ -199,14 +198,7 @@ public class MainActivity extends AppCompatActivity {
                         .setText("Sticker\n")
                         .setMaxTextSize(14)
                         .resizeText()
-                , Gravity.RIGHT);
-
-        ImageView test = new ImageView(this);
-        final StickerView.LayoutParams layoutParams = new StickerView.LayoutParams(300, 300);
-        layoutParams.gravity = Gravity.LEFT;
-        test.setLayoutParams(layoutParams);
-        test.setImageResource(R.drawable.haizewang_215);
-        stickerView.addView(test);
+                , Gravity.END);
     }
 
     @Override
