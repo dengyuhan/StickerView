@@ -932,6 +932,10 @@ public class StickerView extends FrameLayout {
         return constrained;
     }
 
+    public List<Sticker> getStickers() {
+        return stickers;
+    }
+
     @NonNull
     public StickerView setConstrained(boolean constrained) {
         this.constrained = constrained;
