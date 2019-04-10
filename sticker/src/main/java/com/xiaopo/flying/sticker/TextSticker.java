@@ -2,10 +2,11 @@ package com.xiaopo.flying.sticker;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.ColorFilter;
 import android.graphics.Matrix;
+import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorInt;
 import android.support.annotation.Dimension;
@@ -87,8 +88,6 @@ public class TextSticker extends Sticker {
 
     @Override
     public void draw(@NonNull Canvas canvas) {
-        resizeText();
-
         Matrix matrix = getMatrix();
         canvas.save();
         canvas.concat(matrix);
@@ -236,43 +235,42 @@ public class TextSticker extends Sticker {
      * (minus padding). You should always call this method after the initialization.
      */
     @NonNull
-    protected TextSticker resizeText() {
+    public TextSticker resizeText() {
         final CharSequence text = getText();
 
         if (text == null || text.length() <= 0) {
             return this;
         }
 
-        //可用的宽度
-        int availableWidthPixels = textRect.width();
-        //可用的高度
-        int availableHeightPixels = textRect.height();
+        final int drawableWidth = drawable instanceof EmptyDrawable ? 0 : getOriginalWidth();
+        final int drawableHeight = drawable instanceof EmptyDrawable ? 0 : getOriginalHeight();
 
         final Rect containerBound = getContainerBound();
         final float measureTextWidth = textPaint.measureText(text, 0, text.length());
+        //可用的宽度 如果有图片宽用图片宽 否则用文字宽 文字宽超出了容器就限制在容器宽
         final int textWidth = measureTextWidth > containerBound.width() ? containerBound.width() : (int) measureTextWidth;
+        final int availableWidthPixels = drawableWidth > 0 ? drawableWidth : textWidth;
         //文字高度
         float targetTextSizePixels = maxTextSizePixels;
         int targetTextHeightPixels =
-                getTextHeightPixels(text, textWidth, targetTextSizePixels);
-        //(如果没有超出最大高度 就用文字高度)
+                getTextHeightPixels(text, availableWidthPixels, targetTextSizePixels);
+        //可用的高度 (如果没有超出最大高度 就用文字高度)
         final int textHeight = targetTextHeightPixels > containerBound.height() ? containerBound.height() : targetTextHeightPixels;
+        final int availableHeightPixels = drawableHeight > 0 ? drawableHeight : textHeight;
 
-        availableWidthPixels = textWidth;
-        availableHeightPixels = textHeight;
+        if (drawable == null || drawable instanceof EmptyDrawable) {
+            setDrawable(new EmptyDrawable() {
+                @Override
+                public int getIntrinsicWidth() {
+                    return availableWidthPixels;
+                }
 
-        final ColorDrawable colorDrawable = new ColorDrawable() {
-            @Override
-            public int getIntrinsicWidth() {
-                return textWidth;
-            }
-
-            @Override
-            public int getIntrinsicHeight() {
-                return textHeight;
-            }
-        };
-        setDrawable(colorDrawable);
+                @Override
+                public int getIntrinsicHeight() {
+                    return availableHeightPixels;
+                }
+            });
+        }
 
         // Safety check
         // (Do not resize if the view does not have dimensions or if there is no text)
@@ -376,4 +374,27 @@ public class TextSticker extends Sticker {
     private int convertSpToPx(float scaledPixels) {
         return (int) (scaledPixels * context.getResources().getDisplayMetrics().scaledDensity + 0.5f);
     }
+
+    private static class EmptyDrawable extends Drawable {
+        @Override
+        public void draw(@NonNull Canvas canvas) {
+
+        }
+
+        @Override
+        public void setAlpha(int alpha) {
+
+        }
+
+        @Override
+        public void setColorFilter(ColorFilter colorFilter) {
+
+        }
+
+        @Override
+        public int getOpacity() {
+            return PixelFormat.TRANSLUCENT;
+        }
+    }
+
 }
