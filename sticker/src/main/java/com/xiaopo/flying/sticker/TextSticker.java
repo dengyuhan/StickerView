@@ -87,6 +87,8 @@ public class TextSticker extends Sticker {
 
     @Override
     public void draw(@NonNull Canvas canvas) {
+        resizeText();
+
         Matrix matrix = getMatrix();
         canvas.save();
         canvas.concat(matrix);
@@ -256,23 +258,21 @@ public class TextSticker extends Sticker {
         //(如果没有超出最大高度 就用文字高度)
         final int textHeight = targetTextHeightPixels > containerBound.height() ? containerBound.height() : targetTextHeightPixels;
 
-        if (drawable == null) {
-            availableWidthPixels = textWidth;
-            availableHeightPixels = textHeight;
+        availableWidthPixels = textWidth;
+        availableHeightPixels = textHeight;
 
-            final ColorDrawable colorDrawable = new ColorDrawable() {
-                @Override
-                public int getIntrinsicWidth() {
-                    return textWidth;
-                }
+        final ColorDrawable colorDrawable = new ColorDrawable() {
+            @Override
+            public int getIntrinsicWidth() {
+                return textWidth;
+            }
 
-                @Override
-                public int getIntrinsicHeight() {
-                    return textHeight;
-                }
-            };
-            setDrawable(colorDrawable);
-        }
+            @Override
+            public int getIntrinsicHeight() {
+                return textHeight;
+            }
+        };
+        setDrawable(colorDrawable);
 
         // Safety check
         // (Do not resize if the view does not have dimensions or if there is no text)
