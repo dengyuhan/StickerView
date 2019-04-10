@@ -339,6 +339,10 @@ public class TextSticker extends Sticker {
         return this;
     }
 
+    public StaticLayout getStaticLayout() {
+        return staticLayout;
+    }
+
     /**
      * @return lower text size limit, in pixels.
      */
