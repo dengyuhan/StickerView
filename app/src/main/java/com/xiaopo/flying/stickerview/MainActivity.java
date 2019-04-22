@@ -181,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERM_RQST_CODE);
         } else {
-            loadSticker();
+           // loadSticker();
         }
     }
 
@@ -197,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
                         .setText("Sticker")
                         .setMaxTextSize(32f)
                 , Gravity.END);
+
     }
 
     @Override
