@@ -884,7 +884,7 @@ public class StickerView extends FrameLayout {
         sticker.setContainerBound(getWidth(), getHeight());
         if (sticker instanceof TextSticker) {
             ((TextSticker) sticker).resizeText();
-        } else if (sticker instanceof ViewSticker) {
+        }else if (sticker instanceof ViewSticker) {
             ((ViewSticker) sticker).onPostInitialize();
         }
 
@@ -900,7 +900,15 @@ public class StickerView extends FrameLayout {
             } else {
                 scaleFactor = mInitialScale;
             }
-            sticker.getMatrix().postScale(scaleFactor, scaleFactor);
+
+            if (sticker instanceof ViewSticker) {
+                final ViewGroup.LayoutParams params = ((ViewSticker) sticker).getView().getLayoutParams();
+                params.width = (int) (scaleFactor * sticker.getOriginalWidth());
+                params.height = (int) (scaleFactor * sticker.getOriginalHeight());
+                ((ViewSticker) sticker).onPostInitialize();
+            } else {
+                sticker.getMatrix().postScale(scaleFactor, scaleFactor);
+            }
         }
 
         setStickerPosition(sticker, gravity);

@@ -23,14 +23,8 @@ public class ViewSticker extends Sticker {
     //@Override
     public void onPostInitialize() {
         final ViewGroup.LayoutParams params = mView.getLayoutParams();
-        int width = mView.getWidth();
-        int height = mView.getHeight();
-        if (width <= 0 && params.width > 0) {
-            width = params.width;
-        }
-        if (height <= 0 && params.height > 0) {
-            height = params.height;
-        }
+        int width = params.width > 0 ? params.width : mView.getWidth();
+        int height = params.height > 0 ? params.height : mView.getHeight();
         this.mOriginalRect = new Rect(0, 0, width, height);
     }
 
