@@ -22,14 +22,13 @@
         android:layout_weight="1"
         android:layout_height="0dp"
         app:bringToFrontCurrentSticker="true"
-        app:initialScale="0.4"
-        app:initialScaleBaseline="parent_width"
         app:showBorder="true"
         app:showIcons="true">
 
-
         <ImageView
-            android:layout_gravity="right"
+            app:initialScale="0.5"
+            app:initialScaleBaseline="parent_width"
+            android:layout_gravity="right|bottom"
             android:src="@drawable/haizewang_215"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />

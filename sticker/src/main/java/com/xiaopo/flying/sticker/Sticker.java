@@ -15,6 +15,15 @@ import android.support.annotation.Nullable;
  */
 public abstract class Sticker {
 
+  public static final int SCALE_BASELINE_SELF = 0;
+  public static final int SCALE_BASELINE_PARENT_WIDTH = 1;
+  public static final int SCALE_BASELINE_PARENT_HEIGHT = 2;
+
+  //初始化时的缩放 相对于父类容器
+  private float mInitialScale;
+  //初始化时的缩放 以宽度还是以高度为基准
+  private int mInitialScaleBaseline = SCALE_BASELINE_SELF;
+
   private final float[] matrixValues = new float[9];
   private final float[] unrotatedWrapperCorner = new float[8];
   private final float[] unrotatedPoint = new float[2];
@@ -26,7 +35,21 @@ public abstract class Sticker {
   private boolean isFlippedHorizontally;
   private boolean isFlippedVertically;
 
-  public boolean isFlippedHorizontally() {
+
+  public void setInitialScale(float scale, @IntRange(to = SCALE_BASELINE_PARENT_HEIGHT, from = SCALE_BASELINE_SELF) int scaleBaseline) {
+      mInitialScale = scale;
+      mInitialScaleBaseline = scaleBaseline;
+  }
+
+    public float getInitialScale() {
+        return mInitialScale;
+    }
+
+    public int getInitialScaleBaseline() {
+        return mInitialScaleBaseline;
+    }
+
+    public boolean isFlippedHorizontally() {
     return isFlippedHorizontally;
   }
 

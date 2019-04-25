@@ -17,6 +17,7 @@ import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
@@ -74,10 +75,6 @@ public class StickerView extends FrameLayout {
     public static final int FLIP_HORIZONTALLY = 1;
     public static final int FLIP_VERTICALLY = 1 << 1;
 
-    private final int SCALE_BASELINE_SELF = 0;
-    private final int SCALE_BASELINE_WIDTH = 1;
-    private final int SCALE_BASELINE_HEIGHT = 2;
-
     private final List<Sticker> stickers = new ArrayList<>();
     private final List<BitmapStickerIcon> icons = new ArrayList<>(4);
 
@@ -125,10 +122,6 @@ public class StickerView extends FrameLayout {
     private float mCurrentX;
     private float mCurrentY;
 
-    //初始化时的缩放 相对于父类容器
-    private float mInitialScale;
-    //初始化时的缩放 以宽度还是以高度为基准
-    private int mInitialScaleBaseline;
     private boolean mDebugBorder;
 
     public StickerView(Context context) {
@@ -146,8 +139,6 @@ public class StickerView extends FrameLayout {
         try {
             a = context.obtainStyledAttributes(attrs, R.styleable.StickerView);
             mDebugBorder = a.getBoolean(R.styleable.StickerView_debugBorder, false);
-            mInitialScale = a.getFloat(R.styleable.StickerView_initialScale, 0f);
-            mInitialScaleBaseline = a.getInt(R.styleable.StickerView_initialScaleBaseline, SCALE_BASELINE_SELF);
             showIcons = a.getBoolean(R.styleable.StickerView_showIcons, false);
             showBorder = a.getBoolean(R.styleable.StickerView_showBorder, false);
             bringToFrontCurrentSticker =
@@ -224,20 +215,12 @@ public class StickerView extends FrameLayout {
     protected void requestLayoutStickers() {
         for (Sticker sticker : stickers) {
             if (sticker instanceof ViewSticker) {
-                final float rotation = sticker.getCurrentAngle();
-                final RectF mappedBound = sticker.getMappedBound();
-                final float scaleWidth = sticker.getCurrentWidth();
-                final float scaleHeight = sticker.getCurrentHeight();
-                //(旋转后的宽高-缩放后的宽高)的一半就是偏移量
-                int offsetX = (int) (mappedBound.right - mappedBound.left - scaleWidth) / 2;
-                int offsetY = (int) (mappedBound.bottom - mappedBound.top - scaleHeight) / 2;
-
-                int newLeft = (int) mappedBound.left + offsetX;
-                int newTop = (int) mappedBound.top + offsetY;
-                int newRight = (int) (newLeft + scaleWidth);
-                int newBottom = (int) (newTop + scaleHeight);
-                ((ViewSticker) sticker).getView().setRotation(rotation);
-                ((ViewSticker) sticker).getView().layout(newLeft, newTop, newRight, newBottom);
+                final float scaleWidthHalf = sticker.getCurrentWidth() / 2;
+                final float scaleHeightHalf = sticker.getCurrentHeight() / 2;
+                final PointF centerPoint = sticker.getMappedCenterPoint();
+                final View view = ((ViewSticker) sticker).getView();
+                view.setRotation(sticker.getCurrentAngle());
+                view.layout((int) (centerPoint.x - scaleWidthHalf), (int) (centerPoint.y - scaleHeightHalf), (int) (centerPoint.x + scaleWidthHalf), (int) (centerPoint.y + scaleHeightHalf));
             }
         }
     }
@@ -376,7 +359,11 @@ public class StickerView extends FrameLayout {
 
             case MotionEvent.ACTION_MOVE:
                 handleCurrentMode(event);
-                requestLayout();
+                if (handlingSticker instanceof ViewSticker) {
+                    requestLayout();
+                } else {
+                    invalidate();
+                }
                 break;
 
             case MotionEvent.ACTION_UP:
@@ -841,7 +828,11 @@ public class StickerView extends FrameLayout {
         if (params instanceof FrameLayout.LayoutParams) {
             gravity = ((FrameLayout.LayoutParams) params).gravity;
         }
-        addSticker(new ViewSticker(child), gravity);
+        final ViewSticker sticker = new ViewSticker(child);
+        if (params instanceof StickerView.LayoutParams) {
+            sticker.setInitialScale(((LayoutParams) params).initialScale, ((LayoutParams) params).initialScaleBaseline);
+        }
+        addSticker(sticker, gravity);
     }
 
 
@@ -884,32 +875,28 @@ public class StickerView extends FrameLayout {
         sticker.setContainerBound(getWidth(), getHeight());
         if (sticker instanceof TextSticker) {
             ((TextSticker) sticker).resizeText();
-        }else if (sticker instanceof ViewSticker) {
+        } else if (sticker instanceof ViewSticker) {
             ((ViewSticker) sticker).onPostInitialize();
         }
 
         //初始化的缩放
-        if (mInitialScale > 0f) {
+        final float initialScale = sticker.getInitialScale();
+        if (initialScale > 0f && initialScale != 1f) {
+            final int initialScaleBaseline = sticker.getInitialScaleBaseline();
             float scaleFactor;
-            if (SCALE_BASELINE_WIDTH == mInitialScaleBaseline) {
+            if (Sticker.SCALE_BASELINE_PARENT_WIDTH == initialScaleBaseline) {
                 int stickerWidth = sticker instanceof ViewSticker ? sticker.getOriginalWidth() : sticker.getDrawable().getIntrinsicWidth();
-                scaleFactor = (float) getWidth() * mInitialScale / stickerWidth;
-            } else if (SCALE_BASELINE_HEIGHT == mInitialScaleBaseline) {
+                scaleFactor = (float) getWidth() * initialScale / stickerWidth;
+            } else if (Sticker.SCALE_BASELINE_PARENT_HEIGHT == initialScaleBaseline) {
                 int stickerHeight = sticker instanceof ViewSticker ? sticker.getOriginalHeight() : sticker.getDrawable().getIntrinsicHeight();
-                scaleFactor = (float) getHeight() * mInitialScale / stickerHeight;
+                scaleFactor = (float) getHeight() * initialScale / stickerHeight;
             } else {
-                scaleFactor = mInitialScale;
+                scaleFactor = initialScale;
             }
 
-            if (sticker instanceof ViewSticker) {
-                final ViewGroup.LayoutParams params = ((ViewSticker) sticker).getView().getLayoutParams();
-                params.width = (int) (scaleFactor * sticker.getOriginalWidth());
-                params.height = (int) (scaleFactor * sticker.getOriginalHeight());
-                ((ViewSticker) sticker).onPostInitialize();
-            } else {
-                sticker.getMatrix().postScale(scaleFactor, scaleFactor);
-            }
+            sticker.getMatrix().postScale(scaleFactor, scaleFactor);
         }
+
 
         setStickerPosition(sticker, gravity);
 
@@ -918,14 +905,18 @@ public class StickerView extends FrameLayout {
         if (onStickerOperationListener != null) {
             onStickerOperationListener.onStickerAdded(sticker);
         }
-        requestLayout();
+        if (sticker instanceof ViewSticker) {
+            requestLayout();
+        } else {
+            invalidate();
+        }
     }
 
     protected void setStickerPosition(@NonNull Sticker sticker, int gravity) {
         final Rect bounds = new Rect(getPaddingLeft(), getPaddingRight(), getWidth() - getPaddingRight(), getHeight() - getPaddingBottom());
         final Rect outRect = new Rect();
-        Gravity.apply(gravity, sticker.getOriginalWidth(), sticker.getOriginalHeight(), bounds, outRect);
-        sticker.getMatrix().setTranslate(outRect.left, outRect.top);
+        Gravity.apply(gravity, (int) sticker.getCurrentWidth(), (int) sticker.getCurrentHeight(), bounds, outRect);
+        sticker.getMatrix().postTranslate(outRect.left, outRect.top);
     }
 
     @NonNull
@@ -1065,6 +1056,48 @@ public class StickerView extends FrameLayout {
     public interface OnStickerPointChangedListener {
 
         void onStickerPointChanged(@NonNull Sticker sticker, @NonNull MotionEvent event);
+    }
+
+    public static class LayoutParams extends FrameLayout.LayoutParams {
+        private static final int SCALE_BASELINE_SELF = Sticker.SCALE_BASELINE_SELF;
+        private static final int SCALE_BASELINE_WIDTH = Sticker.SCALE_BASELINE_PARENT_WIDTH;
+        private static final int SCALE_BASELINE_HEIGHT = Sticker.SCALE_BASELINE_PARENT_HEIGHT;
+
+        //初始化时的缩放 相对于父类容器
+        public float initialScale;
+        //初始化时的缩放 以宽度还是以高度为基准
+        public int initialScaleBaseline;
+
+        public LayoutParams(Context c, AttributeSet attrs) {
+            super(c, attrs);
+
+            final TypedArray a = c.obtainStyledAttributes(attrs, R.styleable.StickerView);
+            initialScale = a.getFloat(R.styleable.StickerView_initialScale, 0f);
+            initialScaleBaseline = a.getInt(R.styleable.StickerView_initialScaleBaseline, SCALE_BASELINE_SELF);
+
+            a.recycle();
+        }
+
+        public LayoutParams(int width, int height) {
+            super(width, height);
+        }
+
+        public LayoutParams(int width, int height, int gravity) {
+            super(width, height, gravity);
+        }
+
+        public LayoutParams(ViewGroup.LayoutParams source) {
+            super(source);
+        }
+
+        public LayoutParams(ViewGroup.MarginLayoutParams source) {
+            super(source);
+        }
+
+        @RequiresApi(Build.VERSION_CODES.KITKAT)
+        public LayoutParams(LayoutParams source) {
+            super(source);
+        }
     }
 
 }
