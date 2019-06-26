@@ -9,10 +9,10 @@
         <!--初始化时的缩放-->
         <attr name="initialScale" format="float" />
         <!--初始化时的缩放 以宽度还是以高度为基准-->
-        <attr name="initialScaleBaseline" format="enum" >
-            <enum name="self" value="0"/>
-            <enum name="parent_width" value="1"/>
-            <enum name="parent_height" value="2"/>
+        <attr name="initialScaleBaseline" format="enum">
+            <enum name="self" value="0" />
+            <enum name="parent_width" value="1" />
+            <enum name="parent_height" value="2" />
         </attr>
         <attr name="debugBorder" format="boolean" />
     </declare-styleable>

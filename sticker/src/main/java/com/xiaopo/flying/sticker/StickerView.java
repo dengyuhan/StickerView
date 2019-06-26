@@ -1059,9 +1059,9 @@ public class StickerView extends FrameLayout {
     }
 
     public static class LayoutParams extends FrameLayout.LayoutParams {
-        private static final int SCALE_BASELINE_SELF = Sticker.SCALE_BASELINE_SELF;
-        private static final int SCALE_BASELINE_WIDTH = Sticker.SCALE_BASELINE_PARENT_WIDTH;
-        private static final int SCALE_BASELINE_HEIGHT = Sticker.SCALE_BASELINE_PARENT_HEIGHT;
+        public static final int SCALE_BASELINE_SELF = Sticker.SCALE_BASELINE_SELF;
+        public static final int SCALE_BASELINE_WIDTH = Sticker.SCALE_BASELINE_PARENT_WIDTH;
+        public static final int SCALE_BASELINE_HEIGHT = Sticker.SCALE_BASELINE_PARENT_HEIGHT;
 
         //初始化时的缩放 相对于父类容器
         public float initialScale;
